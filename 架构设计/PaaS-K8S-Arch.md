@@ -36,5 +36,32 @@
   - K-operator
 
 - K8S Network Solution
-  - UnderLay
-  - Overlay
+  - UnderLay（*IP可路由*）
+    - bridge
+    - PTP（*veth pair*）
+    - IPVALN
+    - MACVLAN
+    - Calico（*三层解决方案*)
+  - Overlay（*IP不可路由*）
+    - Flannel（*Linux TUN解决方案*）
+    - OVS(*bridge增强*)
+      - OVN
+
+### 虚拟网路设备
+
+**Linux Bridge / OVS**，在Linux network stack 的二层net_recieve方法注册事件，然后过滤和封装数据报文。容器是通过veth pair连接到Node的bridge上进行数据投递，node 网络出口也必须连接到bridge才能跨node进行访问。
+
+需要开启**IP Forward**具备IP报文转发功能，和**bridge hairpin**让Arp报文直接提交给交换机处理。因为报文
+
+**linux TUN（二层）/ TAP（三层）**，通过在Linux Dev设备列表提供文件，将数据报文转化成对文件的读写。应用在用户态读写该文件后获取其他应用使用该虚拟网络设备发送和接受报文，然后再经过处理后通过实际网络设备投递到网络上。使用该虚拟网络设备的应用是看不到实际的网络设备的。
+
+**Linux veth pair（PTP）**，该方案最简单，给每个容器分配veth，另外对应的veth对应存在在实际的网络环境中，然后将该veth对应的IP加入到网络层路由即可。该方案单个容许需要2个IP支持
+
+**Linux IPVLAN & MACVLAN**，该解决方案是将本地的网卡进行虚拟分割。
+
+### Calico
+
+
+### 主机网卡BOND功能
+
+将主机上多块网卡BOND在一起后，相当于单卡网卡提供网络能力，增强容错性，和传输性能。
